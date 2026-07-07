@@ -182,6 +182,3 @@ print(result['final_text'])     # Hinglish localized version
 - **Solution**: Groq is typically fast, but network latency can affect performance. Check your internet connection
 
 
----
-
-**Built with ❤️ for content creators worldwide**
