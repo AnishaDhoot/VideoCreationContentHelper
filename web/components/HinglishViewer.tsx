@@ -191,7 +191,7 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
         audio.play();
       } catch (err: any) {
         // Fallback gracefully to browser voices if API key is missing or calls fail
-        setErrorMessage("ElevenLabs key is not configured in .env.local. Falling back to browser's free online voice...");
+        setErrorMessage(err.message || "ElevenLabs synthesis failed. Falling back to browser's free online voice...");
         speakWithBrowserFallback();
       }
     } 
