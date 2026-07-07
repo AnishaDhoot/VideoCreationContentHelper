@@ -165,34 +165,6 @@ print(result['final_text'])     # Hinglish localized version
 
 ---
 
-## ☁️ Deployment Guide
-
-### Vercel Deployment (Frontend)
-
-Deploy the Next.js frontend to production for free:
-
-1. **Push code to GitHub**: Ensure your repository is on GitHub
-2. **Import to Vercel**:
-   - Sign in to [Vercel](https://vercel.com)
-   - Click **"Add New" → "Project"**
-   - Import your repository
-3. **Configure Project Settings**:
-   - **Framework Preset**: Select `Next.js`
-   - **Root Directory**: Set to `web` (critical - the Next.js app is in the `web/` subfolder)
-4. **Add Environment Variables**:
-   - `GROQ_API_KEY` = your actual Groq API key
-   - `ELEVENLABS_API_KEY` = your ElevenLabs API key (optional)
-5. **Deploy**: Click **"Deploy"**. Vercel will build and deploy in under a minute!
-
-### Python Backend Deployment
-
-For production Python deployment, consider:
-- **Railway** or **Render** for simple Python app hosting
-- **AWS Lambda** or **Google Cloud Functions** for serverless
-- **Docker** for containerized deployment
-
----
-
 ## 🔍 Troubleshooting
 
 ### Common Issues
@@ -209,48 +181,6 @@ For production Python deployment, consider:
 **Issue**: Pipeline is slow
 - **Solution**: Groq is typically fast, but network latency can affect performance. Check your internet connection
 
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Development Guidelines
-
-- Follow existing code style and conventions
-- Add comments for complex logic
-- Test thoroughly before submitting
-- Update documentation as needed
-
----
-
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
----
-
-## 🙏 Acknowledgments
-
-- **Groq** for providing fast LLM inference
-- **ElevenLabs** for high-quality TTS voices
-- **LangChain & LangGraph** for the agent framework
-- **Next.js** for the React framework
-
----
-
-## 📞 Support
-
-For issues, questions, or suggestions:
-- Open an issue on GitHub
-- Check existing documentation
-- Review the troubleshooting section above
 
 ---
 
