@@ -116,14 +116,14 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: 26px 28px;
   transition: all 0.3s ease;
   overflow: hidden;
 }
 
 /* Card sizing left column */
 .controlColumn > .card:first-child {
-  flex: 1.3;
+  flex: 1.5;
   min-height: 0;
 }
 
@@ -131,16 +131,16 @@
 .presetsRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 10px;
+  margin-bottom: 20px;
   flex-shrink: 0;
 }
 
 .presetBtn {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 6px;
-  padding: 6px 12px;
+  border-radius: 8px;
+  padding: 8px 14px;
   font-size: 11px;
   font-weight: 600;
   color: #b0b3c2;
@@ -160,10 +160,10 @@
   display: flex;
   flex-direction: column;
   background: var(--input-bg);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 22px;
   flex: 1;
   min-height: 0;
 }
@@ -175,10 +175,11 @@
   resize: none;
   font-family: inherit;
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.7;
   color: #f3f4f6;
   outline: none;
   overflow-y: auto;
+  letter-spacing: 0.2px;
 }
 
 .textarea::placeholder {
@@ -192,8 +193,8 @@
   font-weight: 600;
   color: #4b5563;
   border-top: 1px solid rgba(255, 255, 255, 0.04);
-  padding-top: 8px;
-  margin-top: 8px;
+  padding-top: 10px;
+  margin-top: 10px;
   flex-shrink: 0;
 }
 
@@ -202,8 +203,8 @@
   position: relative;
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   border: none;
-  border-radius: 10px;
-  padding: 14px 24px;
+  border-radius: 12px;
+  padding: 16px 28px;
   font-size: 13px;
   font-weight: 700;
   color: #ffffff;
