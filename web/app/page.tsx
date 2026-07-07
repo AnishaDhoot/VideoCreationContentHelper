@@ -23,6 +23,14 @@ const PRESETS = [
     name: "Growth Mindset",
     text: "Success is not an overnight event; it is the result of compounding small daily improvements. In a world that is changing at an exponential rate, the ability to unlearn, relearn, and adapt is your most valuable skill. If you stay in your comfort zone, you are actually moving backward. Embrace challenges, view failures not as setbacks but as data points for learning, and cultivate a mindset geared towards perpetual self-improvement. The future belongs to the curious.",
   },
+  {
+    name: "Finance & Coding",
+    text: "Passive income is the holy grail of financial freedom, but most people approach it all wrong. They think it means sitting on a beach while money falls from the sky. In reality, building a passive revenue stream requires massive active work upfront. Whether you are coding a SaaS product, writing an e-book, or launching a YouTube channel, you have to build an asset that solves a real problem for real people. Focus on value creation first, and financial return will follow naturally.",
+  },
+  {
+    name: "Cybersecurity Tips",
+    text: "Your personal data is being traded like a commodity, and most passwords are breached in under three seconds. Relying on simple passwords or reusing them across accounts is an open invitation to identity theft. In this digital era, enabling multi-factor authentication, utilizing a secure password manager, and understanding how to spot phishing links are basic hygiene skills. Don't wait for a data breach to take your cybersecurity seriously. Lock down your digital life today.",
+  },
 ];
 
 interface AnalyzerData {
