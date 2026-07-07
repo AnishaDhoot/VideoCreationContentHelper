@@ -15,9 +15,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Default voice: "Prem" (Hindi/English code-switched voice)
-    // ElevenLabs Prem voice ID: pNInz6obpgq5paNsJ7Vm
-    const voiceId = voice_id || "pNInz6obpgq5paNsJ7Vm";
+    // Default voice: "Rachel" (21m00Tcm4TlvDq8ikWAM)
+    const voiceId = voice_id || "21m00Tcm4TlvDq8ikWAM";
 
     const response = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,

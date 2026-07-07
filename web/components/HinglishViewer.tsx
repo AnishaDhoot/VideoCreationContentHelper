@@ -7,6 +7,13 @@ interface HinglishViewerProps {
   text: string;
 }
 
+interface ElevenVoice {
+  voice_id: string;
+  name: string;
+  lang: string;
+  isEleven: boolean;
+}
+
 // Common Romanized Hindi words
 const HINDI_WORDS = new Set([
   "dosto", "aaj", "hum", "aap", "tum", "main", "mujhe", "apna", "apni", "apne", "mera", "meri", "mere",
@@ -35,7 +42,8 @@ const ENGLISH_WORDS = new Set([
 
 export default function HinglishViewer({ text }: HinglishViewerProps) {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [selectedVoiceName, setSelectedVoiceName] = useState<string>("elevenlabs");
+  const [elevenVoices, setElevenVoices] = useState<ElevenVoice[]>([]);
+  const [selectedVoiceName, setSelectedVoiceName] = useState<string>("");
   const [rate, setRate] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -43,6 +51,27 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
   const synthRef = useRef<SpeechSynthesis | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Load ElevenLabs voices dynamically from account
+  useEffect(() => {
+    const fetchVoices = async () => {
+      try {
+        const res = await fetch("/api/voices");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.voices && data.voices.length > 0) {
+            setElevenVoices(data.voices);
+            // Default to first ElevenLabs voice
+            setSelectedVoiceName(data.voices[0].voice_id);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load ElevenLabs voices list", err);
+      }
+    };
+    
+    fetchVoices();
+  }, []);
 
   // Initialize Speech Synthesis & Load Browser Voices
   useEffect(() => {
@@ -67,6 +96,13 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
         });
         
         setVoices(sorted.length > 0 ? sorted : allVoices);
+
+        // Set default browser voice if ElevenLabs voices are empty
+        if (selectedVoiceName === "" && elevenVoices.length === 0 && sorted.length > 0) {
+          const hiVoice = sorted.find(v => v.lang.startsWith("hi"));
+          const enInVoice = sorted.find(v => v.lang.toLowerCase().includes("en-in"));
+          setSelectedVoiceName(hiVoice?.name || enInVoice?.name || sorted[0].name);
+        }
       };
 
       loadVoices();
@@ -78,7 +114,7 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
     return () => {
       stopAllAudio();
     };
-  }, []);
+  }, [elevenVoices, selectedVoiceName]);
 
   // Stop playback on text changes
   useEffect(() => {
@@ -100,10 +136,7 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
   const speakWithBrowserFallback = () => {
     if (!synthRef.current || !text) return;
     
-    // Pick the best available browser voice
-    // 1. A Hindi voice (hi-IN)
-    // 2. An Indian English voice (en-IN)
-    // 3. First voice on the sorted list (prioritizes Google/Natural neural voices)
+    // Pick the best browser fallback voice
     const hiVoice = voices.find(v => v.lang.startsWith("hi"));
     const enInVoice = voices.find(v => v.lang.toLowerCase().includes("en-in"));
     const fallbackVoice = hiVoice || enInVoice || voices[0] || null;
@@ -121,7 +154,6 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
     utterance.onend = () => {
       setIsPlaying(false);
     };
-
     utterance.onerror = () => {
       setIsPlaying(false);
     };
@@ -135,9 +167,11 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
     if (!text) return;
     setErrorMessage(null);
 
+    const isElevenVoiceSelected = elevenVoices.some(v => v.voice_id === selectedVoiceName);
+
     // If currently playing, perform pause/stop
     if (isPlaying) {
-      if (selectedVoiceName === "elevenlabs" && audioRef.current) {
+      if (isElevenVoiceSelected && audioRef.current) {
         audioRef.current.pause();
         setIsPlaying(false);
       } else if (synthRef.current) {
@@ -148,7 +182,7 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
     }
 
     // Resume if paused
-    if (selectedVoiceName === "elevenlabs" && audioRef.current && audioRef.current.paused && audioRef.current.src) {
+    if (isElevenVoiceSelected && audioRef.current && audioRef.current.paused && audioRef.current.src) {
       audioRef.current.play();
       setIsPlaying(true);
       return;
@@ -161,17 +195,17 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
     stopAllAudio();
 
     // 1. ELEVENLABS SCENARIO
-    if (selectedVoiceName === "elevenlabs") {
+    if (isElevenVoiceSelected) {
       try {
         const response = await fetch("/api/tts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: text }),
+          body: JSON.stringify({ text: text, voice_id: selectedVoiceName }),
         });
 
         if (!response.ok) {
           const errData = await response.json();
-          throw new Error(errData.error || "Failed to call ElevenLabs API");
+          throw new Error(errData.error || "Failed to synthesize speech via ElevenLabs API");
         }
 
         const audioBlob = await response.blob();
@@ -190,7 +224,6 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
         audioRef.current = audio;
         audio.play();
       } catch (err: any) {
-        // Fallback gracefully to browser voices if API key is missing or calls fail
         setErrorMessage(err.message || "ElevenLabs synthesis failed. Falling back to browser's free online voice...");
         speakWithBrowserFallback();
       }
@@ -257,6 +290,10 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
     });
   }, [text]);
 
+  const isElevenVoiceActive = useMemo(() => {
+    return elevenVoices.some(v => v.voice_id === selectedVoiceName);
+  }, [elevenVoices, selectedVoiceName]);
+
   return (
     <div className={styles.viewerContainer}>
       {/* Header Panel */}
@@ -321,7 +358,11 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
               disabled={!text}
               className={styles.voiceSelect}
             >
-              <option value="elevenlabs">✨ ElevenLabs Multilingual Neural (Cloud)</option>
+              {elevenVoices.map((voice) => (
+                <option key={voice.voice_id} value={voice.voice_id}>
+                  {voice.name}
+                </option>
+              ))}
               {voices.map((voice) => (
                 <option key={voice.name} value={voice.name}>
                   {voice.name} ({voice.lang})
@@ -330,7 +371,7 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
             </select>
           </div>
 
-          {/* Speed / Rate control (disabled for ElevenLabs as it's pre-rendered) */}
+          {/* Speed / Rate control (disabled for ElevenLabs) */}
           <div className={styles.controlItem}>
             <label className={styles.label}>Speed: {rate}x</label>
             <input
@@ -339,7 +380,7 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
               max="1.8"
               step="0.1"
               value={rate}
-              disabled={!text || selectedVoiceName === "elevenlabs"}
+              disabled={!text || isElevenVoiceActive}
               onChange={(e) => setRate(Number(e.target.value))}
               className={styles.slider}
             />
