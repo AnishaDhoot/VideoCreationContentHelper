@@ -6,11 +6,13 @@ import NodeGraph from "@/components/NodeGraph";
 import DiffViewer from "@/components/DiffViewer";
 import Teleprompter from "@/components/Teleprompter";
 import HinglishViewer from "@/components/HinglishViewer";
+import ScoreBoard from "@/components/ScoreBoard";
+import Storyboard from "@/components/Storyboard";
 
 // Define presets for the user
 const PRESETS = [
   {
-    name: "Tech Explainer",
+    name: "Tech AI Explainer",
     text: "In the rapidly evolving landscape of technology, staying ahead of the curve is not just an advantage; it's a necessity. The integration of artificial intelligence, machine learning, and data analytics into our daily operations is no longer a futuristic concept but a present reality. Embracing these advancements allows us to streamline processes and drive growth. However, it is imperative that we approach these technologies with a critical eye, ensuring ethical considerations are at the forefront of our strategies.",
   },
   {
@@ -23,27 +25,37 @@ const PRESETS = [
   },
 ];
 
+interface AnalyzerData {
+  scores: { retention: number; pacing: number; resonance: number };
+  tips: string[];
+  storyboard: { time: string; visual: string; sfx: string }[];
+}
+
 export default function Home() {
   const [rawInput, setRawInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [activeStage, setActiveStage] = useState<"idle" | "editor" | "scriptwriter" | "translator" | "completed">("idle");
+  const [activeStage, setActiveStage] = useState<"idle" | "editor" | "scriptwriter" | "translator" | "analyzer" | "completed">("idle");
   
   const [statuses, setStatuses] = useState<{
     editor: "idle" | "running" | "completed" | "failed";
     scriptwriter: "idle" | "running" | "completed" | "failed";
     translator: "idle" | "running" | "completed" | "failed";
+    analyzer: "idle" | "running" | "completed" | "failed";
   }>({
     editor: "idle",
     scriptwriter: "idle",
     translator: "idle",
+    analyzer: "idle",
   });
 
   const [editorResult, setEditorResult] = useState("");
   const [scriptwriterResult, setScriptwriterResult] = useState("");
   const [translatorResult, setTranslatorResult] = useState("");
+  const [analyzerResult, setAnalyzerResult] = useState<AnalyzerData | null>(null);
 
   const [logs, setLogs] = useState<{ time: string; msg: string; type: "info" | "success" | "error" | "node" }[]>([]);
-  const [selectedTab, setSelectedTab] = useState<"editor" | "scriptwriter" | "translator">("editor");
+  const [selectedTab, setSelectedTab] = useState<"editor" | "scriptwriter" | "translator" | "analyzer">("editor");
+  const [rightPanelTab, setRightPanelTab] = useState<"analytics" | "storyboard">("analytics");
 
   const consoleEndRef = useRef<HTMLDivElement>(null);
 
@@ -80,10 +92,12 @@ export default function Home() {
       editor: "running",
       scriptwriter: "idle",
       translator: "idle",
+      analyzer: "idle",
     });
     setEditorResult("");
     setScriptwriterResult("");
     setTranslatorResult("");
+    setAnalyzerResult(null);
     setSelectedTab("editor");
     setLogs([]);
 
@@ -136,7 +150,7 @@ export default function Home() {
             const data = JSON.parse(dataStr);
 
             if (event === "stage_start") {
-              const stage = data.stage as "editor" | "scriptwriter" | "translator";
+              const stage = data.stage as "editor" | "scriptwriter" | "translator" | "analyzer";
               setActiveStage(stage);
               setSelectedTab(stage);
               setStatuses((prev) => ({ ...prev, [stage]: "running" }));
@@ -153,7 +167,7 @@ export default function Home() {
                 setTranslatorResult((prev) => prev + text);
               }
             } else if (event === "stage_complete") {
-              const stage = data.stage as "editor" | "scriptwriter" | "translator";
+              const stage = data.stage as "editor" | "scriptwriter" | "translator" | "analyzer";
               setStatuses((prev) => ({ ...prev, [stage]: "completed" }));
               
               if (stage === "editor") {
@@ -165,6 +179,9 @@ export default function Home() {
               } else if (stage === "translator") {
                 setTranslatorResult(data.result);
                 addLog("Translator Node completed Hinglish localization.", "success");
+              } else if (stage === "analyzer") {
+                setAnalyzerResult(data.result);
+                addLog("Analyzer Node completed performance metrics scoring and storyboarding.", "success");
               }
               
               addLog(`Node [${stage.toUpperCase()}] status: COMPLETED`, "success");
@@ -318,18 +335,139 @@ export default function Home() {
                 3. Hinglish Script
                 {statuses.translator === "running" && <span className={styles.tabSpinner}></span>}
               </button>
+              <button
+                onClick={() => setSelectedTab("analyzer")}
+                className={`${styles.tabBtn} ${selectedTab === "analyzer" ? styles.activeTab : ""} ${statuses.analyzer === "completed" ? styles.completedTab : ""}`}
+              >
+                4. AI Analysis
+                {statuses.analyzer === "running" && <span className={styles.tabSpinner}></span>}
+              </button>
             </div>
 
             {/* Tab content panel */}
             <div className={styles.tabContentPanel}>
               {selectedTab === "editor" && (
-                <DiffViewer original={rawInput} edited={editorResult} />
+                <div className={styles.singleTabWrapper}>
+                  <DiffViewer original={rawInput} edited={editorResult} />
+                </div>
               )}
+              
               {selectedTab === "scriptwriter" && (
-                <Teleprompter script={scriptwriterResult} />
+                <div className={styles.splitTabWrapper}>
+                  {/* Left: Teleprompter */}
+                  <div className={styles.leftContentPane}>
+                    <Teleprompter script={scriptwriterResult} />
+                  </div>
+                  {/* Right: Sub-tabbed Analytics */}
+                  <div className={styles.rightAnalyticsPane}>
+                    <div className={styles.subTabsHeader}>
+                      <button
+                        onClick={() => setRightPanelTab("analytics")}
+                        className={`${styles.subTabBtn} ${rightPanelTab === "analytics" ? styles.activeSubTab : ""}`}
+                      >
+                        AI Scores
+                      </button>
+                      <button
+                        onClick={() => setRightPanelTab("storyboard")}
+                        className={`${styles.subTabBtn} ${rightPanelTab === "storyboard" ? styles.activeSubTab : ""}`}
+                      >
+                        B-Roll Cues
+                      </button>
+                    </div>
+                    <div className={styles.subTabContent}>
+                      {analyzerResult ? (
+                        rightPanelTab === "analytics" ? (
+                          <ScoreBoard scores={analyzerResult.scores} tips={analyzerResult.tips} />
+                        ) : (
+                          <Storyboard storyboard={analyzerResult.storyboard} />
+                        )
+                      ) : (
+                        <div className={styles.analyticsPlaceholder}>
+                          {statuses.analyzer === "running" ? (
+                            <div className={styles.analyzingLoader}>
+                              <div className={styles.spinner}></div>
+                              <p>Generating AI Hook Analytics & Storyboard Cues...</p>
+                            </div>
+                          ) : (
+                            <p>No analytics data loaded. Execute the content pipeline to trigger analysis.</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               )}
+              
               {selectedTab === "translator" && (
-                <HinglishViewer text={translatorResult} />
+                <div className={styles.splitTabWrapper}>
+                  {/* Left: Hinglish script + TTS audio player */}
+                  <div className={styles.leftContentPane}>
+                    <HinglishViewer text={translatorResult} />
+                  </div>
+                  {/* Right: Sub-tabbed Analytics */}
+                  <div className={styles.rightAnalyticsPane}>
+                    <div className={styles.subTabsHeader}>
+                      <button
+                        onClick={() => setRightPanelTab("analytics")}
+                        className={`${styles.subTabBtn} ${rightPanelTab === "analytics" ? styles.activeSubTab : ""}`}
+                      >
+                        AI Scores
+                      </button>
+                      <button
+                        onClick={() => setRightPanelTab("storyboard")}
+                        className={`${styles.subTabBtn} ${rightPanelTab === "storyboard" ? styles.activeSubTab : ""}`}
+                      >
+                        B-Roll Cues
+                      </button>
+                    </div>
+                    <div className={styles.subTabContent}>
+                      {analyzerResult ? (
+                        rightPanelTab === "analytics" ? (
+                          <ScoreBoard scores={analyzerResult.scores} tips={analyzerResult.tips} />
+                        ) : (
+                          <Storyboard storyboard={analyzerResult.storyboard} />
+                        )
+                      ) : (
+                        <div className={styles.analyticsPlaceholder}>
+                          {statuses.analyzer === "running" ? (
+                            <div className={styles.analyzingLoader}>
+                              <div className={styles.spinner}></div>
+                              <p>Generating AI Hook Analytics & Storyboard Cues...</p>
+                            </div>
+                          ) : (
+                            <p>No analytics data loaded. Execute the content pipeline to trigger analysis.</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedTab === "analyzer" && (
+                <div className={styles.singleTabWrapper}>
+                  {analyzerResult ? (
+                    <div className={styles.fullAnalysisGrid}>
+                      <div className={styles.gridCol}>
+                        <ScoreBoard scores={analyzerResult.scores} tips={analyzerResult.tips} />
+                      </div>
+                      <div className={styles.gridCol}>
+                        <Storyboard storyboard={analyzerResult.storyboard} />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className={styles.analyticsPlaceholder}>
+                      {statuses.analyzer === "running" ? (
+                        <div className={styles.analyzingLoader}>
+                          <div className={styles.spinner}></div>
+                          <p>Synthesizing AI Engagement Metrics & Storyboards...</p>
+                        </div>
+                      ) : (
+                        <p>No analytics data loaded. Execute the content pipeline to trigger analysis.</p>
+                      )}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>

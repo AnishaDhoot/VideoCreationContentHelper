@@ -101,8 +101,72 @@ export async function POST(req: NextRequest) {
           }
           
           sendEvent("stage_complete", { stage: "translator", result: finalTranslatorText.trim() });
+
+          // ==========================================
+          // STAGE 4: Analyzer Node (JSON Output Mode)
+          // ==========================================
+          sendEvent("stage_start", { stage: "analyzer", message: "Stage 4: Running AI Engagement & Storyboard Analysis..." });
+
+          const analyzerPrompt = `
+          You are an expert YouTube content consultant and media analyst. Analyze the following Hinglish script and provide performance scoring and storyboard visual/audio suggestions.
           
-          sendEvent("pipeline_complete", { message: "Pipeline run completed successfully!" });
+          You must return a JSON object with the exact structure below. Do not add any backticks, markdown markers, or text outside the JSON object.
+          
+          {
+            "scores": {
+              "retention": 85, // 0-100 rating for how well the hook captures the first 3 seconds
+              "pacing": 90,     // 0-100 rating for vocabulary flow, punchiness, and reading speed
+              "resonance": 80   // 0-100 rating for emotional charm, local relevance, and Hinglish naturalness
+            },
+            "tips": [
+              "Always open with a visual pattern interrupt in the first 2 seconds.",
+              "Use high vocal pitch fluctuation on tech English words."
+            ],
+            "storyboard": [
+              {
+                "time": "0s - 3s",
+                "visual": "Zoom in on camera, display big bold red text overlay: 'REVOLUTION'.",
+                "sfx": "Distant sub-bass drop, followed by record scratch."
+              },
+              {
+                "time": "3s - 10s",
+                "visual": "B-roll of modern coding screens or typing hands with cyberpunk glow.",
+                "sfx": "Lofi hip-hop beat kicks in gently in the background."
+              },
+              {
+                "time": "10s - 20s",
+                "visual": "A split-screen showing a traditional graph going down and AI line going up.",
+                "sfx": "Swoosh transition sound effect."
+              }
+            ]
+          }
+
+          Hinglish Script to Analyze:
+          ${finalTranslatorText.trim()}
+          `;
+
+          const analyzerCompletion = await groq.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            messages: [{ role: "user", content: analyzerPrompt }],
+            temperature: 0.5,
+            response_format: { type: "json_object" },
+          });
+
+          const resultText = analyzerCompletion.choices[0]?.message?.content || "{}";
+          let parsedData = {};
+          try {
+            parsedData = JSON.parse(resultText);
+          } catch (e) {
+            parsedData = {
+              scores: { retention: 70, pacing: 70, resonance: 70 },
+              tips: ["Failed to parse AI Analysis. Check script format."],
+              storyboard: [{ time: "0s", visual: "No cues generated.", sfx: "None" }]
+            };
+          }
+
+          sendEvent("stage_complete", { stage: "analyzer", result: parsedData });
+          
+          sendEvent("pipeline_complete", { message: "All stages completed successfully!" });
           controller.close();
         } catch (error: any) {
           sendEvent("error", { message: error.message || "An error occurred during execution." });

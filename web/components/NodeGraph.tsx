@@ -4,13 +4,14 @@ import React from "react";
 import styles from "./NodeGraph.module.css";
 
 interface NodeGraphProps {
-  activeStage: "idle" | "editor" | "scriptwriter" | "translator" | "completed";
+  activeStage: "idle" | "editor" | "scriptwriter" | "translator" | "analyzer" | "completed";
   statuses: {
     editor: "idle" | "running" | "completed" | "failed";
     scriptwriter: "idle" | "running" | "completed" | "failed";
     translator: "idle" | "running" | "completed" | "failed";
+    analyzer: "idle" | "running" | "completed" | "failed";
   };
-  onSelectNode: (node: "editor" | "scriptwriter" | "translator") => void;
+  onSelectNode: (node: "editor" | "scriptwriter" | "translator" | "analyzer") => void;
 }
 
 export default function NodeGraph({ activeStage, statuses, onSelectNode }: NodeGraphProps) {
@@ -19,6 +20,7 @@ export default function NodeGraph({ activeStage, statuses, onSelectNode }: NodeG
     { id: "editor", label: "EDITOR Node", type: "worker", status: statuses.editor },
     { id: "scriptwriter", label: "SCRIPTWRITER Node", type: "worker", status: statuses.scriptwriter },
     { id: "translator", label: "TRANSLATOR Node", type: "worker", status: statuses.translator },
+    { id: "analyzer", label: "ANALYZER Node", type: "worker", status: statuses.analyzer },
     { id: "end", label: "END", type: "system", status: activeStage === "completed" ? "completed" as const : "idle" as const },
   ];
 
@@ -53,7 +55,7 @@ export default function NodeGraph({ activeStage, statuses, onSelectNode }: NodeG
                 }`}
                 onClick={() => {
                   if (isWorker) {
-                    onSelectNode(node.id as "editor" | "scriptwriter" | "translator");
+                    onSelectNode(node.id as "editor" | "scriptwriter" | "translator" | "analyzer");
                   }
                 }}
               >
@@ -69,7 +71,7 @@ export default function NodeGraph({ activeStage, statuses, onSelectNode }: NodeG
                   {isWorker && (
                     <div className={styles.nodeSubtext}>
                       {nodeStatus === "idle" && "Idle"}
-                      {nodeStatus === "running" && "Synthesizing..."}
+                      {nodeStatus === "running" && "Analyzing..."}
                       {nodeStatus === "completed" && "Completed"}
                       {nodeStatus === "failed" && "Failed"}
                     </div>

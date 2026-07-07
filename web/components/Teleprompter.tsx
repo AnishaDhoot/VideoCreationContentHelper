@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import styles from "./Teleprompter.module.css";
 
 interface TeleprompterProps {
@@ -13,6 +13,30 @@ export default function Teleprompter({ script }: TeleprompterProps) {
   const [speed, setSpeed] = useState(3); // 1 to 10
   const [fontSize, setFontSize] = useState(24); // px
   
+  // Word count calculation
+  const wordCount = useMemo(() => {
+    if (!script) return 0;
+    return script.split(/\s+/).filter(Boolean).length;
+  }, [script]);
+
+  // Translate speed (1-10) to Words Per Minute (WPM)
+  // 1x = 90 WPM (Slow read)
+  // 3x = 130 WPM (Average conversational read)
+  // 5x = 160 WPM (Fast pacing)
+  // 10x = 220 WPM (Super speed)
+  const estimatedWPM = useMemo(() => {
+    return speed * 15 + 75;
+  }, [speed]);
+
+  // Read time formatted as MM:SS
+  const formattedDuration = useMemo(() => {
+    if (wordCount === 0) return "00:00";
+    const durationSeconds = Math.ceil((wordCount / estimatedWPM) * 60);
+    const mins = Math.floor(durationSeconds / 60);
+    const secs = durationSeconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  }, [wordCount, estimatedWPM]);
+
   // Auto-scroll loop
   useEffect(() => {
     if (!isPlaying) return;
@@ -22,7 +46,7 @@ export default function Teleprompter({ script }: TeleprompterProps) {
     if (!container) return;
 
     const scroll = () => {
-      // scroll speed step
+      // scroll speed step based on speed multiplier
       container.scrollTop += (speed * 0.4);
 
       if (container.scrollTop + container.clientHeight >= container.scrollHeight - 1) {
@@ -57,6 +81,17 @@ export default function Teleprompter({ script }: TeleprompterProps) {
           <button onClick={handleReset} className={styles.resetBtn}>
             Reset
           </button>
+          
+          {/* Estimated Read-Time Clock */}
+          <div className={styles.stopwatchBadge}>
+            <svg className={styles.stopwatchIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <circle cx="12" cy="12" r="9"></circle>
+              <polyline points="12 5 12 12 16 14"></polyline>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+            </svg>
+            <span className={styles.durationTime}>{formattedDuration}</span>
+            <span className={styles.wpmSub}>({wordCount} words @ {estimatedWPM} WPM)</span>
+          </div>
         </div>
 
         <div className={styles.controlsRight}>

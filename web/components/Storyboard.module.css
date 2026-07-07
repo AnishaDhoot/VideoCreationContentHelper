@@ -1,0 +1,154 @@
+.storyboardContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  background: rgba(7, 8, 15, 0.5);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.boardTitle {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #8a8d9b;
+}
+
+.timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-left: 20px;
+}
+
+/* Vertical Timeline Track */
+.timeline::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 6px;
+  bottom: 8px;
+  width: 2px;
+  background: linear-gradient(180deg, var(--primary), var(--secondary), transparent);
+  border-radius: 1px;
+}
+
+.timelineItem {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+}
+
+/* Marker Node */
+.timelineMarker {
+  position: absolute;
+  top: 20px;
+  left: -20px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #0d0f1b;
+  border: 2px solid var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  box-shadow: 0 0 8px var(--primary);
+}
+
+.markerInner {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+/* Cinematic Story Card */
+.storyCard {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.storyCard:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(6, 182, 212, 0.2);
+  transform: translateX(4px);
+  box-shadow: -4px 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.timeBadge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(6, 182, 212, 0.1);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  color: var(--secondary);
+  box-shadow: 0 0 6px rgba(6, 182, 212, 0.15);
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.frameLabel {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #8a8d9b;
+}
+
+.cardContent {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cueSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cueHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cueIcon {
+  width: 14px;
+  height: 14px;
+}
+
+.cueText {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #d1d5db;
+  padding-left: 20px;
+}
+
+.placeholder {
+  color: #4b5563;
+  font-size: 12px;
+  font-style: italic;
+  padding: 20px 0;
+}
