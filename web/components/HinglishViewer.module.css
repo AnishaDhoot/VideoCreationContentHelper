@@ -259,8 +259,6 @@
   flex: 1;
   padding: 24px;
   overflow-y: auto;
-  min-height: 320px;
-  max-height: 450px;
   background: #020306;
 }
 

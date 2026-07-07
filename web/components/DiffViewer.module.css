@@ -102,7 +102,6 @@
   overflow-y: auto;
   white-space: pre-wrap;
   flex: 1;
-  max-height: 400px;
 }
 
 .polished {
@@ -114,8 +113,6 @@
   flex: 1;
   padding: 20px;
   overflow-y: auto;
-  min-height: 320px;
-  max-height: 450px;
 }
 
 .inlineContent {
