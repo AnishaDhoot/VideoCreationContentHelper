@@ -4,20 +4,6 @@ Sequentia AI is a next-generation content creation cockpit designed for modern d
 
 ---
 
-## 📋 Table of Contents
-
-- [Features](#-key-features)
-- [Project Structure](#-project-structure)
-- [Tech Stack](#-tech-stack)
-- [Quick Start](#-quick-start)
-- [Local Setup](#-local-setup--installation)
-- [Usage](#-usage)
-- [Deployment](#-deployment-guide)
-- [Troubleshooting](#-troubleshooting)
-- [Contributing](#-contributing)
-
----
-
 ## ✨ Key Features
 
 - **🔗 Interactive Node Graph**: A live visual graph representing the LangGraph state machine flow. Nodes pulse, loading, success-check, or fail in real-time as data streams through them.
