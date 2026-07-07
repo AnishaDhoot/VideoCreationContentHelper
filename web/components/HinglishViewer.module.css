@@ -311,3 +311,22 @@
   text-align: center;
   padding: 40px 0;
 }
+
+.warningMessage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(245, 158, 11, 0.1);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.warningIcon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
