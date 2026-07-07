@@ -12,6 +12,7 @@ export default function Teleprompter({ script }: TeleprompterProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(3); // 1 to 10
   const [fontSize, setFontSize] = useState(24); // px
+  const [copied, setCopied] = useState(false);
   
   // Word count calculation
   const wordCount = useMemo(() => {
@@ -20,10 +21,6 @@ export default function Teleprompter({ script }: TeleprompterProps) {
   }, [script]);
 
   // Translate speed (1-10) to Words Per Minute (WPM)
-  // 1x = 90 WPM (Slow read)
-  // 3x = 130 WPM (Average conversational read)
-  // 5x = 160 WPM (Fast pacing)
-  // 10x = 220 WPM (Super speed)
   const estimatedWPM = useMemo(() => {
     return speed * 15 + 75;
   }, [speed]);
@@ -46,7 +43,6 @@ export default function Teleprompter({ script }: TeleprompterProps) {
     if (!container) return;
 
     const scroll = () => {
-      // scroll speed step based on speed multiplier
       container.scrollTop += (speed * 0.4);
 
       if (container.scrollTop + container.clientHeight >= container.scrollHeight - 1) {
@@ -65,6 +61,28 @@ export default function Teleprompter({ script }: TeleprompterProps) {
     if (containerRef.current) {
       containerRef.current.scrollTop = 0;
     }
+  };
+
+  const handleCopy = async () => {
+    if (!script) return;
+    try {
+      await navigator.clipboard.writeText(script);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy script", err);
+    }
+  };
+
+  const handleDownload = () => {
+    if (!script) return;
+    const element = document.createElement("a");
+    const file = new Blob([script], { type: "text/plain" });
+    element.href = URL.createObjectURL(file);
+    element.download = "youtube_script_hook.txt";
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
   };
 
   return (
@@ -90,8 +108,48 @@ export default function Teleprompter({ script }: TeleprompterProps) {
               <line x1="12" y1="1" x2="12" y2="3"></line>
             </svg>
             <span className={styles.durationTime}>{formattedDuration}</span>
-            <span className={styles.wpmSub}>({wordCount} words @ {estimatedWPM} WPM)</span>
+            <span className={styles.wpmSub}>({wordCount} words)</span>
           </div>
+
+          <div className={styles.actionDivider}></div>
+
+          {/* Quick Actions (Copy & Export) */}
+          <button
+            onClick={handleCopy}
+            disabled={!script}
+            className={`${styles.iconActionBtn} ${copied ? styles.copySuccess : ""}`}
+            title="Copy Script to Clipboard"
+          >
+            {copied ? (
+              <>
+                <svg className={styles.btnIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Copied
+              </>
+            ) : (
+              <>
+                <svg className={styles.btnIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                Copy
+              </>
+            )}
+          </button>
+          <button
+            onClick={handleDownload}
+            disabled={!script}
+            className={styles.iconActionBtn}
+            title="Download Script as .txt file"
+          >
+            <svg className={styles.btnIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Export
+          </button>
         </div>
 
         <div className={styles.controlsRight}>

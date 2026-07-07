@@ -20,7 +20,7 @@ const HINDI_WORDS = new Set([
   "hai", "hain", "tha", "the", "thi", "ho", "bhi", "hi", "na", "ne", "se", "ka", "ki", "ke", "ko", "par",
   "aur", "toh", "ya", "lekin", "magar", "parantu", "kuch", "ek", "do", "tin", "char", "sab", "sabhi",
   "kya", "kyun", "kab", "ab", "jab", "tab", "kaise", "kahan", "kis", "kise", "kisko", "kiske",
-  "karna", "kar", "karte", "karta", "karti", "karke", "kiya", "kiye", "kiyi", "hona", "hota", "hoti", "hote",
+  "karna", "kar", "karte", "karta", "karti", "karke", "kiya", "kiye", "kiyi", "hona", "hota", "hotaa", "hoti", "hote",
   "raha", "rahe", "rahi", "gaya", "gaye", "gayi", "chahiye", "sakte", "sakta", "sakti", "sako", "sake",
   "log", "logon", "baat", "kaam", "naam", "vakt", "samay", "soch", "sochna", "samajh", "samajhna",
   "bana", "banana", "chal", "chalna", "de", "dena", "le", "lena", "aao", "aana", "jaao", "jaana",
@@ -46,6 +46,7 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
   const [selectedVoiceName, setSelectedVoiceName] = useState<string>("");
   const [rate, setRate] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   const synthRef = useRef<SpeechSynthesis | null>(null);
@@ -61,7 +62,6 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
           const data = await res.json();
           if (data.voices && data.voices.length > 0) {
             setElevenVoices(data.voices);
-            // Default to first ElevenLabs voice
             setSelectedVoiceName(data.voices[0].voice_id);
           }
         }
@@ -81,12 +81,10 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
       const loadVoices = () => {
         const allVoices = window.speechSynthesis.getVoices();
         
-        // Filter primarily for Hindi (hi) and English (en) voices
         const filtered = allVoices.filter(v => 
           v.lang.startsWith("hi") || v.lang.startsWith("en")
         );
 
-        // Sort to place high-quality online neural voices (e.g. Google, Natural, Online) at the very top
         const sorted = [...filtered].sort((a, b) => {
           const isANatural = /natural|online|google|neural/i.test(a.name);
           const isBNatural = /natural|online|google|neural/i.test(b.name);
@@ -136,7 +134,6 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
   const speakWithBrowserFallback = () => {
     if (!synthRef.current || !text) return;
     
-    // Pick the best browser fallback voice
     const hiVoice = voices.find(v => v.lang.startsWith("hi"));
     const enInVoice = voices.find(v => v.lang.toLowerCase().includes("en-in"));
     const fallbackVoice = hiVoice || enInVoice || voices[0] || null;
@@ -258,19 +255,38 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
     stopAllAudio();
   };
 
+  const handleCopy = async () => {
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy script", err);
+    }
+  };
+
+  const handleDownload = () => {
+    if (!text) return;
+    const element = document.createElement("a");
+    const file = new Blob([text], { type: "text/plain" });
+    element.href = URL.createObjectURL(file);
+    element.download = "youtube_hinglish_script.txt";
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
+
   const analyzedWords = useMemo(() => {
     if (!text) return [];
 
-    // Split by words and keep whitespace attached for display
     const words = text.split(/(\s+)/);
 
     return words.map((token) => {
-      // Check if it is whitespace
       if (/^\s+$/.test(token)) {
         return { text: token, type: "space" as const };
       }
 
-      // Strip punctuation to classify
       const cleanWord = token.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"'’]/g, "");
 
       if (cleanWord === "") {
@@ -282,7 +298,6 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
       }
 
       if (ENGLISH_WORDS.has(cleanWord) || cleanWord.length > 5 && !cleanWord.endsWith("na") && !cleanWord.endsWith("ta")) {
-        // Assume longer non-typical Hindi ending words are English in this context
         return { text: token, type: "english" as const };
       }
 
@@ -329,6 +344,46 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
           >
             Stop
           </button>
+
+          <div className={styles.actionDivider}></div>
+
+          {/* Quick Actions (Copy & Export) */}
+          <button
+            onClick={handleCopy}
+            disabled={!text}
+            className={`${styles.iconActionBtn} ${copied ? styles.copySuccess : ""}`}
+            title="Copy Hinglish Script to Clipboard"
+          >
+            {copied ? (
+              <>
+                <svg className={styles.btnIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Copied
+              </>
+            ) : (
+              <>
+                <svg className={styles.btnIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                Copy
+              </>
+            )}
+          </button>
+          <button
+            onClick={handleDownload}
+            disabled={!text}
+            className={styles.iconActionBtn}
+            title="Download Hinglish Script as .txt file"
+          >
+            <svg className={styles.btnIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Export
+          </button>
         </div>
 
         {/* Waveform Animation */}
@@ -371,7 +426,7 @@ export default function HinglishViewer({ text }: HinglishViewerProps) {
             </select>
           </div>
 
-          {/* Speed / Rate control (disabled for ElevenLabs) */}
+          {/* Speed / Rate control */}
           <div className={styles.controlItem}>
             <label className={styles.label}>Speed: {rate}x</label>
             <input

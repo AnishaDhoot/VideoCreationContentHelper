@@ -10,6 +10,19 @@ interface DiffViewerProps {
 
 export default function DiffViewer({ original, edited }: DiffViewerProps) {
   const [viewMode, setViewMode] = useState<"split" | "inline">("split");
+  const [copied, setCopied] = useState(false);
+
+  // Copy polished text to clipboard
+  const handleCopy = async () => {
+    if (!edited) return;
+    try {
+      await navigator.clipboard.writeText(edited);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy text", err);
+    }
+  };
 
   // Calculate word-level diff using LCS algorithm
   const diffItems = useMemo(() => {
@@ -19,7 +32,6 @@ export default function DiffViewer({ original, edited }: DiffViewerProps) {
     const oldWords = original.split(/(\s+)/); // keep whitespace
     const newWords = edited.split(/(\s+)/);
 
-    // Filter out empty strings
     const oldFiltered = oldWords.filter(w => w !== "");
     const newFiltered = newWords.filter(w => w !== "");
 
@@ -62,18 +74,44 @@ export default function DiffViewer({ original, edited }: DiffViewerProps) {
     <div className={styles.diffContainer}>
       <div className={styles.diffHeader}>
         <h3 className={styles.title}>Editing Stage Output</h3>
-        <div className={styles.toggleButtons}>
+        <div className={styles.headerActions}>
+          <div className={styles.toggleButtons}>
+            <button
+              onClick={() => setViewMode("split")}
+              className={`${styles.modeBtn} ${viewMode === "split" ? styles.activeMode : ""}`}
+            >
+              Split Screen
+            </button>
+            <button
+              onClick={() => setViewMode("inline")}
+              className={`${styles.modeBtn} ${viewMode === "inline" ? styles.activeMode : ""}`}
+            >
+              Inline Diff
+            </button>
+          </div>
+          
           <button
-            onClick={() => setViewMode("split")}
-            className={`${styles.modeBtn} ${viewMode === "split" ? styles.activeMode : ""}`}
+            onClick={handleCopy}
+            disabled={!edited}
+            className={`${styles.copyBtn} ${copied ? styles.copySuccess : ""}`}
+            title="Copy Polished Text to Clipboard"
           >
-            Split Screen
-          </button>
-          <button
-            onClick={() => setViewMode("inline")}
-            className={`${styles.modeBtn} ${viewMode === "inline" ? styles.activeMode : ""}`}
-          >
-            Inline Diff
+            {copied ? (
+              <>
+                <svg className={styles.actionIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Copied!
+              </>
+            ) : (
+              <>
+                <svg className={styles.actionIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                Copy Polished
+              </>
+            )}
           </button>
         </div>
       </div>
