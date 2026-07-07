@@ -43,7 +43,7 @@ export default function Home() {
   const [rawInput, setRawInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeStage, setActiveStage] = useState<"idle" | "editor" | "scriptwriter" | "translator" | "analyzer" | "completed">("idle");
-  
+
   const [statuses, setStatuses] = useState<{
     editor: "idle" | "running" | "completed" | "failed";
     scriptwriter: "idle" | "running" | "completed" | "failed";
@@ -177,7 +177,7 @@ export default function Home() {
             } else if (event === "stage_complete") {
               const stage = data.stage as "editor" | "scriptwriter" | "translator" | "analyzer";
               setStatuses((prev) => ({ ...prev, [stage]: "completed" }));
-              
+
               if (stage === "editor") {
                 setEditorResult(data.result);
                 addLog("Editor Node completed grammar review and tone tuning.", "success");
@@ -191,7 +191,7 @@ export default function Home() {
                 setAnalyzerResult(data.result);
                 addLog("Analyzer Node completed performance metrics scoring and storyboarding.", "success");
               }
-              
+
               addLog(`Node [${stage.toUpperCase()}] status: COMPLETED`, "success");
             } else if (event === "pipeline_complete") {
               setActiveStage("completed");
@@ -235,13 +235,13 @@ export default function Home() {
 
       {/* Main Workspace grid */}
       <div className={styles.workspaceGrid}>
-        
+
         {/* Left column: input, presets, logs */}
         <section className={styles.controlColumn}>
           <div className={`${styles.card} glass-panel`}>
             <h2 className={styles.cardTitle}>Raw Content Feed</h2>
             <p className={styles.cardDescription}>Input your raw draft text or choose a pre-configured scenario preset below.</p>
-            
+
             {/* Presets */}
             <div className={styles.presetsRow}>
               {PRESETS.map((preset) => (
@@ -311,9 +311,9 @@ export default function Home() {
           {/* Node Graph Panel */}
           <div className={`${styles.card} ${styles.graphCard} glass-panel`}>
             <h2 className={styles.cardTitle}>LangGraph Pipeline Sequence</h2>
-            <NodeGraph 
-              activeStage={activeStage} 
-              statuses={statuses} 
+            <NodeGraph
+              activeStage={activeStage}
+              statuses={statuses}
               onSelectNode={(node) => setSelectedTab(node)}
             />
           </div>
@@ -359,7 +359,7 @@ export default function Home() {
                   <DiffViewer original={rawInput} edited={editorResult} />
                 </div>
               )}
-              
+
               {selectedTab === "scriptwriter" && (
                 <div className={styles.splitTabWrapper}>
                   {/* Left: Teleprompter */}
@@ -405,7 +405,7 @@ export default function Home() {
                   </div>
                 </div>
               )}
-              
+
               {selectedTab === "translator" && (
                 <div className={styles.splitTabWrapper}>
                   {/* Left: Hinglish script + TTS audio player */}
